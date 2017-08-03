@@ -87,7 +87,6 @@ def tf_network(dim_input=27, dim_output=7, batch_size=25, network_config=None):
     mlp_applied, weights_FC, biases_FC = get_mlp_layers(nn_input, n_layers, dim_hidden)
     fc_vars = weights_FC + biases_FC
     loss_out = get_loss_layer(mlp_out=mlp_applied, action=action, precision=precision, batch_size=batch_size)
-
     return TfMap.init_from_lists([nn_input, action, precision], [mlp_applied], [loss_out]), fc_vars, []
 
 
@@ -143,10 +142,16 @@ def multi_modal_network(dim_input=27, dim_output=7, batch_size=25, network_confi
         'wc2': get_xavier_weights([filter_size, filter_size, num_filters[0], num_filters[1]], (pool_size, pool_size)), # 5x5 conv, 32 inputs, 64 outputs
     }
 
+    # modified 20170802 : add name for tf.get_variable
     biases = {
-        'bc1': init_bias([num_filters[0]]),
-        'bc2': init_bias([num_filters[1]]),
+        'bc1': init_bias([num_filters[0]], name='bc1'),
+        'bc2': init_bias([num_filters[1]], name='bc2'),
     }
+    # biases = {
+    #     'bc1': init_bias([num_filters[0]]),
+    #     'bc2': init_bias([num_filters[1]]),
+    # }
+
 
     conv_layer_0 = conv2d(img=image_input, w=weights['wc1'], b=biases['bc1'])
 
@@ -160,10 +165,12 @@ def multi_modal_network(dim_input=27, dim_output=7, batch_size=25, network_confi
 
     fc_input = tf.concat(concat_dim=1, values=[conv_out_flat, state_input])
 
-    fc_output, _, _ = get_mlp_layers(fc_input, n_layers, dim_hidden)
+    fc_output, fc_w, fc_b = get_mlp_layers(fc_input, n_layers, dim_hidden)
 
     loss = euclidean_loss_layer(a=action, b=fc_output, precision=precision, batch_size=batch_size)
-    return TfMap.init_from_lists([nn_input, action, precision], [fc_output], [loss])
+    # modified 20170802 : return fc_var and last_conv_var
+    # return TfMap.init_from_lists([nn_input, action, precision], [fc_output], [loss])
+    return TfMap.init_from_lists([nn_input, action, precision], [fc_output], [loss]), fc_w + fc_b, [weights['wc2'], biases['bc2']]
 
 def multi_modal_network_fp(dim_input=27, dim_output=7, batch_size=25, network_config=None):
     """

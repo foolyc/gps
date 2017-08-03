@@ -28,6 +28,7 @@ class TfMap:
         loss = check_list_and_convert(loss)
         if len(inputs) < 3:  # pad for the constructor if needed.
             inputs += [None]*(3 - len(inputs))
+        
         return cls(inputs[0], inputs[1], inputs[2], outputs[0], loss[0], fp=fp)
 
     def get_input_tensor(self):

@@ -4,7 +4,6 @@ import copy
 import numpy as np
 
 import mjcpy
-
 from gps.agent.agent import Agent
 from gps.agent.agent_utils import generate_noise, setup
 from gps.agent.config import AGENT_MUJOCO
@@ -221,7 +220,13 @@ class AgentMuJoCo(Agent):
                 raise ValueError('Image features should not be in observation, just state')
             if feature_fn is not None:
                 obs = sample.get_obs()  # Assumes that the rest of the sample has been populated
-                sample.set(IMAGE_FEAT, feature_fn(obs), t=0)
+                # modified 20170802 : feat_op in TFpolicy is None
+                try:
+                    feat_tmp = feature_fn(obs)
+                except:
+                    feat_tmp = np.zeros((self._hyperparams['sensor_dims'][IMAGE_FEAT],))
+                sample.set(IMAGE_FEAT, feat_tmp, t=0)
+                # sample.set(IMAGE_FEAT, feature_fn(obs), t=0)
             else:
                 # TODO - need better solution than setting this to 0.
                 sample.set(IMAGE_FEAT, np.zeros((self._hyperparams['sensor_dims'][IMAGE_FEAT],)), t=0)
@@ -260,7 +265,13 @@ class AgentMuJoCo(Agent):
             sample.set(RGB_IMAGE, np.transpose(img["img"], (2, 1, 0)).flatten(), t=t+1)
             if feature_fn is not None:
                 obs = sample.get_obs()  # Assumes that the rest of the observation has been populated
-                sample.set(IMAGE_FEAT, feature_fn(obs), t=t+1)
+                # modified 20170802 : feat_op in TFpolicy is None
+                try:
+                    feat_tmp = feature_fn(obs)
+                except:
+                    feat_tmp = np.zeros((self._hyperparams['sensor_dims'][IMAGE_FEAT],))
+                sample.set(IMAGE_FEAT, feat_tmp, t=t + 1)
+                # sample.set(IMAGE_FEAT, feature_fn(obs), t=t+1)
             else:
                 # TODO - need better solution than setting this to 0.
                 sample.set(IMAGE_FEAT, np.zeros((self._hyperparams['sensor_dims'][IMAGE_FEAT],)), t=t+1)

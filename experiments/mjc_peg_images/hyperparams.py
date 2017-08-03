@@ -21,7 +21,7 @@ from gps.algorithm.policy.lin_gauss_init import init_lqr
 from gps.algorithm.policy.policy_prior_gmm import PolicyPriorGMM
 from gps.proto.gps_pb2 import JOINT_ANGLES, JOINT_VELOCITIES, \
         END_EFFECTOR_POINTS, END_EFFECTOR_POINT_VELOCITIES, ACTION, \
-        RGB_IMAGE, RGB_IMAGE_SIZE
+        RGB_IMAGE, RGB_IMAGE_SIZE, IMAGE_FEAT
 from gps.algorithm.policy_opt.tf_model_example import multi_modal_network
 
 IMAGE_WIDTH = 80
@@ -37,6 +37,8 @@ SENSOR_DIMS = {
     ACTION: 7,
     RGB_IMAGE: IMAGE_WIDTH*IMAGE_HEIGHT*IMAGE_CHANNELS,
     RGB_IMAGE_SIZE: 3,
+    # modified 20170802 : add IMAGE_FEAT to SENSOR_DIMS in case of bug in agent_mjc.py line 277
+    IMAGE_FEAT: 3200,
 }
 
 PR2_GAINS = np.array([3.09, 1.08, 0.393, 0.674, 0.111, 0.152, 0.098])
