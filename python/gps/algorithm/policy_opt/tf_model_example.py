@@ -16,7 +16,11 @@ def init_bias(shape, name=None):
 def batched_matrix_vector_multiply(vector, matrix):
     """ computes x^T A in mini-batches. """
     vector_batch_as_matricies = tf.expand_dims(vector, [1])
-    mult_result = tf.batch_matmul(vector_batch_as_matricies, matrix)
+    if int(tf.__version__.split('.')[0]) == 1:
+        mult_result = tf.matmul(vector_batch_as_matricies, matrix)
+    else :
+        mult_result = tf.batch_matmul(vector_batch_as_matricies, matrix)
+
     squeezed_result = tf.squeeze(mult_result, [1])
     return squeezed_result
 
@@ -142,15 +146,10 @@ def multi_modal_network(dim_input=27, dim_output=7, batch_size=25, network_confi
         'wc2': get_xavier_weights([filter_size, filter_size, num_filters[0], num_filters[1]], (pool_size, pool_size)), # 5x5 conv, 32 inputs, 64 outputs
     }
 
-    # modified 20170802 : add name for tf.get_variable
     biases = {
         'bc1': init_bias([num_filters[0]], name='bc1'),
         'bc2': init_bias([num_filters[1]], name='bc2'),
     }
-    # biases = {
-    #     'bc1': init_bias([num_filters[0]]),
-    #     'bc2': init_bias([num_filters[1]]),
-    # }
 
 
     conv_layer_0 = conv2d(img=image_input, w=weights['wc1'], b=biases['bc1'])
@@ -163,7 +162,10 @@ def multi_modal_network(dim_input=27, dim_output=7, batch_size=25, network_confi
 
     conv_out_flat = tf.reshape(conv_layer_1, [-1, conv_out_size])
 
-    fc_input = tf.concat(concat_dim=1, values=[conv_out_flat, state_input])
+    if int(tf.__version__.split('.')[0]) == 1:
+        fc_input = tf.concat(values=[conv_out_flat, state_input], axis=1)
+    else:
+        fc_input = tf.concat(concat_dim=1, values=[conv_out_flat, state_input])
 
     fc_output, fc_w, fc_b = get_mlp_layers(fc_input, n_layers, dim_hidden)
 
